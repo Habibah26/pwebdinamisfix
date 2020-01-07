@@ -6,15 +6,16 @@
                     <div class="card-header">Data User</div>
 
                     <div class="card-body">
-                        <button type="button" class="btn btn-success float-right"><i class="fas fa-bars nav-icon"></i> Tambah Kategori
+                        <button type="button" class="btn btn-success float-right" @click="modalBaru"><i class="fas fa-bars nav-icon"></i> 
+                        Tambah User
                         </button>        
                         <table class="table table-bordered">  
                             <thead>
                             <tr>
-                            <th style="width :25%"><center>Id </center></th>
-                            <th style="width :35%"><center>Nama </center></th> 
-                            <th style="width :25%"><center>Email </center></th>
-                            <th style="width :25%"><center>Aksi </center></th>    
+                            <th style="width :10%"><center>Id </center></th>
+                            <th style="width :30%"><center>Nama </center></th> 
+                            <th style="width :40%"><center>Email </center></th>
+                            <th style="width :20%"><center>Aksi </center></th>    
                             </tr>
                             </thead>
                     <tbody>
@@ -39,6 +40,73 @@
                 </div>
             </div>
         </div>
+        <!-- Modal -->
+        <div
+        class="modal fade"
+        id="tambah"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="tambahLabel"
+        aria-hidden="true"
+        >
+        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="tambahLabel" v-show="!editmode">Tambah Data Baru</h5>
+            <h5 class="modal-title" id="tambahLabel" v-show="editmode">Rubah Data Kategori</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form @submit.prevent="editmode ? updateData() : createData()">
+            <div class="modal-body">
+              <div class="form-group">
+                <input
+                  v-model="form.name"
+                  type="text"
+                  name="name"
+                  placeholder="name"
+                  class="form-control"
+                  :class="{ 'is-invalid': form.errors.has('name') }"
+                />
+                <has-error :form="form" field="name"></has-error>
+              </div>
+
+              <div class="form-group">
+                <input
+                  v-model="form.email"
+                  type="text"
+                  name="email"
+                  placeholder="email"
+                  class="form-control"
+                  :class="{ 'is-invalid': form.errors.has('email') }"
+                />
+                <has-error :form="form" field="email"></has-error>
+              </div>
+
+              <div class="form-group">
+                <input
+                  v-model="form.password"
+                  type="text"
+                  name="password"
+                  placeholder="password"
+                  class="form-control"
+                  :class="{ 'is-invalid': form.errors.has('password') }"
+                />
+                <has-error :form="form" field="password"></has-error>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-dismiss="modal">Keluar</button>
+              <button v-show="!editmode" type="submit" class="btn btn-primary">Tambah</button>
+              <button v-show="editmode" type="submit" class="btn btn-primary">Rubah</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--/Modal-->
     </div>
 </template>
 
@@ -56,9 +124,29 @@
             };
         },
         methods: {
+            modalBaru(){
+                this.editmode = false;
+                this.form.reset();
+                $("#tambah").modal("show");
+            },
             loadData() { //methods dari semua form CRUD Masuk ke dalam methods 
             axios.get("api/user").then(({ data }) =>(this.users = data)); 
             //untuk menampilkan data
+        },
+        createData() {
+            this.form
+             .post("api/user")
+             .then(() => {
+                this.$Progress.start();
+                Fire.$emit("refreshData");
+                $("#tambah").modal("hide");
+                // Toast.fire({
+                //     type: "success",
+                //     title: "Data Berhasi Tersimpan"
+                // });
+                this.$Progress.finish();
+                })
+                .catch();
         }
         },
         created(){ //untuk menampilkan data
